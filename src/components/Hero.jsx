@@ -1,5 +1,6 @@
 import ProgressRing from "./ProgressRing.jsx";
 import HeroFigure from "./HeroFigure.jsx";
+import HeroBackdrop from "./HeroBackdrop.jsx";
 
 const PARTICLES = Array.from({ length: 14 }, (_, i) => ({
   left: `${(i * 37) % 100}%`,
@@ -19,9 +20,9 @@ export default function Hero({ rankTitle, fulfilled, total, currentStreak, bestS
   return (
     <section className="hero" aria-label="Your journey">
       <div className="hero-figure-panel ornate-frame" aria-hidden={false}>
+        <HeroBackdrop />
         <div className="hero-fog hero-fog-1" />
         <div className="hero-fog hero-fog-2" />
-        <div className="hero-ruins" />
         <HeroFigure glow={glow} />
         <div className="hero-particles">
           {PARTICLES.map((p, i) => (
