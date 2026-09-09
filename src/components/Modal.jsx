@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { X } from "@phosphor-icons/react";
 
 /** Accessible dialog overlay. Renders as a centered card on wide screens and a bottom
  * sheet on narrow ones (see .modal-sheet in styles.css). Closes on Escape or overlay click. */
@@ -31,7 +32,7 @@ export default function Modal({ title, onClose, children, labelledBy }) {
             {title}
           </h2>
           <button type="button" className="modal-close" aria-label="Close" onClick={onClose}>
-            ×
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
         <div className="modal-body">{children}</div>

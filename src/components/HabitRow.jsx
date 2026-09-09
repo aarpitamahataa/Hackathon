@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import { DotsThreeVertical, PencilSimple, Trash, Check } from "@phosphor-icons/react";
 import { todayISO } from "../lib/dates.js";
 import { computeHabitStats, recentHeatmap } from "../lib/streaks.js";
 import { describeFrequency } from "../lib/frequency.js";
+import QuestIcon from "./QuestIcon.jsx";
 
 const UNIT_LABEL = { day: "day", week: "week", month: "month" };
 
@@ -13,7 +15,6 @@ export default function HabitRow({ habit, onToggleToday, onEdit, onDeleteRequest
   const today = todayISO();
   const stats = computeHabitStats(habit, today);
   const heatmap = recentHeatmap(habit.checkIns, today, 14);
-  const accent = habit.color || "var(--accent)";
   const notScheduledToday = !stats.scheduledToday;
 
   useEffect(() => {
@@ -55,7 +56,6 @@ export default function HabitRow({ habit, onToggleToday, onEdit, onDeleteRequest
         (notScheduledToday ? " habit-row-unscheduled" : "") +
         (justFulfilled ? " habit-row-pulse" : "")
       }
-      style={{ "--habit-accent": accent }}
     >
       <button
         type="button"
@@ -63,9 +63,7 @@ export default function HabitRow({ habit, onToggleToday, onEdit, onDeleteRequest
         aria-pressed={stats.doneToday}
         onClick={() => onToggleToday(habit.id)}
       >
-        <span className="habit-emoji" aria-hidden="true">
-          {habit.emoji || "✅"}
-        </span>
+        <QuestIcon value={habit.emoji} />
         <span className="habit-main">
           <span className={stats.doneToday ? "habit-name habit-name-done" : "habit-name"}>{habit.name}</span>
           {habit.description && <span className="habit-description">{habit.description}</span>}
@@ -92,7 +90,7 @@ export default function HabitRow({ habit, onToggleToday, onEdit, onDeleteRequest
           </span>
         </span>
         <span className="habit-check-icon" aria-hidden="true">
-          {stats.doneToday ? "✓" : ""}
+          {stats.doneToday && <Check size={16} weight="bold" />}
         </span>
       </button>
 
@@ -105,7 +103,7 @@ export default function HabitRow({ habit, onToggleToday, onEdit, onDeleteRequest
           aria-haspopup="true"
           onClick={() => setMenuOpen((v) => !v)}
         >
-          ⋮
+          <DotsThreeVertical size={20} weight="bold" aria-hidden="true" />
         </button>
         {menuOpen && (
           <div className="habit-menu-popover" role="menu">
@@ -118,7 +116,7 @@ export default function HabitRow({ habit, onToggleToday, onEdit, onDeleteRequest
                 onEdit(habit);
               }}
             >
-              Edit
+              <PencilSimple size={16} aria-hidden="true" /> Edit
             </button>
             <button
               type="button"
@@ -129,7 +127,7 @@ export default function HabitRow({ habit, onToggleToday, onEdit, onDeleteRequest
                 onDeleteRequest(habit);
               }}
             >
-              Delete
+              <Trash size={16} aria-hidden="true" /> Delete
             </button>
           </div>
         )}

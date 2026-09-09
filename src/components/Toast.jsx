@@ -1,3 +1,5 @@
+import { X } from "@phosphor-icons/react";
+
 export default function Toast({ toast, onUndo, onDismiss }) {
   if (!toast) return null;
 
@@ -17,7 +19,7 @@ export default function Toast({ toast, onUndo, onDismiss }) {
         </button>
       )}
       <button type="button" className="toast-dismiss" aria-label="Dismiss" onClick={onDismiss}>
-        ×
+        <X size={16} aria-hidden="true" />
       </button>
     </div>
   );

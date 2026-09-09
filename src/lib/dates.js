@@ -20,3 +20,16 @@ export function formatTime(hm) {
   const hour12 = h % 12 === 0 ? 12 : h % 12;
   return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
 }
+
+/** The last `n` days as ISO date strings, oldest first, today last. */
+export function lastNDays(n) {
+  const today = new Date();
+  return Array.from({ length: n }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - (n - 1 - i));
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  });
+}

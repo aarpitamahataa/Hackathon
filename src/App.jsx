@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import Hero from "./components/Hero.jsx";
+import SideNav from "./components/SideNav.jsx";
+import TopBar from "./components/TopBar.jsx";
+import RightRail from "./components/RightRail.jsx";
+import HomeView from "./components/HomeView.jsx";
+import QuestsView from "./components/QuestsView.jsx";
+import HousesView from "./components/HousesView.jsx";
+import ChronicleView from "./components/ChronicleView.jsx";
 import HabitForm from "./components/HabitForm.jsx";
-import HabitList from "./components/HabitList.jsx";
-import StatsBar from "./components/StatsBar.jsx";
 import Toast from "./components/Toast.jsx";
 import Modal from "./components/Modal.jsx";
 import ConfirmDialog from "./components/ConfirmDialog.jsx";
-import ReminderBanner from "./components/ReminderBanner.jsx";
 import SettingsModal from "./components/SettingsModal.jsx";
 import { loadHabits, saveHabits, loadSettings, saveSettings, loadHouses } from "./lib/storage.js";
 import { todayISO, nowHM } from "./lib/dates.js";
@@ -36,16 +39,22 @@ export default function App() {
   const [allHabits, setAllHabits] = useState(() => loadHabits());
   const [settings, setSettings] = useState(() => loadSettings());
   const [houses] = useState(() => loadHouses());
+  const [search, setSearch] = useState("");
+  const [view, setView] = useState("home"); // "home" | "quests" | "houses" | "chronicle"
   const [toast, setToast] = useState(null);
   const [editingHabit, setEditingHabit] = useState(null);
   const [deletingHabit, setDeletingHabit] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const inputRef = useRef(null);
-  const listRef = useRef(null);
   const toastTimerRef = useRef(null);
   const konamiProgress = useRef(0);
 
   const habits = useMemo(() => allHabits.filter((h) => h.active !== false), [allHabits]);
+  const visibleHabits = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return habits;
+    return habits.filter((h) => h.name.toLowerCase().includes(q));
+  }, [habits, search]);
 
   useEffect(() => {
     saveHabits(allHabits);
@@ -57,14 +66,15 @@ export default function App() {
     document.documentElement.classList.toggle("party-mode", settings.partyMode);
   }, [settings]);
 
-  // Global keyboard shortcuts: "/" focuses the add-quest input, and the classic
-  // Konami code toggles a delightfully unnecessary party mode.
+  // Global keyboard shortcuts: "/" jumps to the Quests page and focuses its add-quest
+  // input, and the classic Konami code toggles a delightfully unnecessary party mode.
   useEffect(() => {
     function handleKeyDown(e) {
       const isTyping = ["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName);
       if (e.key === "/" && !isTyping) {
         e.preventDefault();
-        inputRef.current?.focus();
+        setView("quests");
+        requestAnimationFrame(() => inputRef.current?.focus());
       }
 
       const expected = KONAMI[konamiProgress.current];
@@ -211,7 +221,7 @@ export default function App() {
   const currentStreakOverall = habits.reduce((max, h) => Math.max(max, computeHabitStats(h, today).current), 0);
   const bestStreakOverall = habits.reduce((max, h) => Math.max(max, computeHabitStats(h, today).best), 0);
 
-  // --- In-app reminder banner -------------------------------------------------------
+  // --- In-app reminder banner (shown on the Home page) -------------------------------
   const nowTime = nowHM();
   const pendingHabits = habits.filter((h) => {
     if (!isScheduledOn(h, today)) return false;
@@ -232,77 +242,70 @@ export default function App() {
     setSettings((prev) => ({ ...prev, reminderDismissedDate: today }));
   }
 
-  function viewHabits() {
-    listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
   return (
-    <main className="app">
-      <div className="top-actions">
-        <button
-          type="button"
-          className="icon-toggle"
-          onClick={() => setSettingsOpen(true)}
-          title="Reminder settings"
-        >
-          ⚙️
-        </button>
-        <button
-          type="button"
-          className="icon-toggle"
-          onClick={toggleMuted}
-          aria-pressed={settings.muted}
-          title={settings.muted ? "Unmute" : "Mute sound effects"}
-        >
-          {settings.muted ? "🔇" : "🔊"}
-        </button>
-        <button
-          type="button"
-          className="icon-toggle"
-          onClick={toggleTheme}
-          aria-pressed={settings.theme === "dark"}
-          title="Toggle Nightfall / Dawn"
-        >
-          {settings.theme === "dark" ? "☀️" : "🌙"}
-        </button>
-      </div>
+    <div className="app-shell">
+      <SideNav activeSection={view} onNavigate={setView} onOpenSettings={() => setSettingsOpen(true)} />
 
-      <Hero
-        rankTitle={rankTitle}
-        fulfilled={fulfilledToday}
-        total={scheduledTodayHabits.length}
-        currentStreak={currentStreakOverall}
-        bestStreak={bestStreakOverall}
-      />
-
-      {showReminderBanner && (
-        <ReminderBanner
-          pendingCount={pendingHabits.length}
-          deadline={settings.defaultReminderTime}
-          onView={viewHabits}
-          onDismiss={dismissReminder}
+      <div className="app-main">
+        <TopBar
+          search={search}
+          onSearchChange={setSearch}
+          muted={settings.muted}
+          onToggleMuted={toggleMuted}
+          theme={settings.theme}
+          onToggleTheme={toggleTheme}
         />
-      )}
 
-      <div className="app-body">
-        {habits.length > 0 && <StatsBar xp={xp} />}
+        <main className="app">
+          {view === "home" && (
+            <HomeView
+              habits={habits}
+              rankTitle={rankTitle}
+              fulfilled={fulfilledToday}
+              total={scheduledTodayHabits.length}
+              currentStreak={currentStreakOverall}
+              bestStreak={bestStreakOverall}
+              xp={xp}
+              hasHabits={habits.length > 0}
+              showReminderBanner={showReminderBanner}
+              pendingCount={pendingHabits.length}
+              reminderDeadline={settings.defaultReminderTime}
+              onViewQuests={() => setView("quests")}
+              onDismissReminder={dismissReminder}
+            />
+          )}
 
-        <HabitForm onSubmit={handleAddHabit} houses={houses} inputRef={inputRef} submitLabel="Add" />
-        <div ref={listRef}>
-          <HabitList
-            habits={habits}
-            houses={houses}
-            onToggleToday={handleToggleToday}
-            onEdit={setEditingHabit}
-            onDeleteRequest={setDeletingHabit}
-          />
-        </div>
+          {view === "quests" && (
+            <QuestsView
+              habits={habits}
+              visibleHabits={visibleHabits}
+              houses={houses}
+              search={search}
+              inputRef={inputRef}
+              onAddHabit={handleAddHabit}
+              onToggleToday={handleToggleToday}
+              onEdit={setEditingHabit}
+              onDeleteRequest={setDeletingHabit}
+            />
+          )}
 
-        <p className="hint">
-          Tip: press <kbd>/</kbd> to jump to the add-quest box. There may or may not be a
-          secret code that does something ridiculous.
-        </p>
+          {view === "houses" && (
+            <HousesView
+              habits={habits}
+              visibleHabits={visibleHabits}
+              houses={houses}
+              search={search}
+              onToggleToday={handleToggleToday}
+              onEdit={setEditingHabit}
+              onDeleteRequest={setDeletingHabit}
+            />
+          )}
+
+          {view === "chronicle" && <ChronicleView habits={habits} />}
+        </main>
       </div>
+
+      <RightRail habits={habits} />
 
       {editingHabit && (
         <Modal title="Edit Quest" onClose={() => setEditingHabit(null)}>
@@ -335,6 +338,6 @@ export default function App() {
       )}
 
       <Toast toast={toast} onUndo={() => setToast(null)} onDismiss={() => setToast(null)} />
-    </main>
+    </div>
   );
 }

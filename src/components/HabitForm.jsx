@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { DEFAULT_EMOJIS, DEFAULT_COLORS } from "../lib/storage.js";
+import { QUEST_ICONS, DEFAULT_QUEST_ICON } from "../lib/questIcons.js";
+import QuestIcon from "./QuestIcon.jsx";
 import { WEEKDAY_ORDER, WEEKDAY_LABELS } from "../lib/frequency.js";
 
 const MAX_NAME_LENGTH = 80;
@@ -9,8 +10,7 @@ function habitToFormState(habit) {
   return {
     name: habit?.name || "",
     description: habit?.description || "",
-    emoji: habit?.emoji || DEFAULT_EMOJIS[0],
-    color: habit?.color || DEFAULT_COLORS[0],
+    emoji: habit?.emoji || DEFAULT_QUEST_ICON,
     houseId: habit?.houseId || "",
     frequencyType: habit?.frequencyType || "daily",
     scheduledDays: habit?.scheduledDays || [],
@@ -95,32 +95,19 @@ export default function HabitForm({
         )}
       </div>
 
-      <div className="picker-row" role="group" aria-label="Choose an emoji">
-        {DEFAULT_EMOJIS.map((e) => (
+      <div className="picker-row icon-picker-row" role="group" aria-label="Choose an icon">
+        {QUEST_ICONS.map(({ id, label }) => (
           <button
-            key={e}
+            key={id}
             type="button"
-            className={"emoji-swatch" + (e === form.emoji ? " emoji-swatch-selected" : "")}
-            aria-pressed={e === form.emoji}
-            aria-label={`Use emoji ${e}`}
-            onClick={() => update({ emoji: e })}
+            className={"icon-swatch" + (id === form.emoji ? " icon-swatch-selected" : "")}
+            aria-pressed={id === form.emoji}
+            aria-label={`Use ${label} icon`}
+            title={label}
+            onClick={() => update({ emoji: id })}
           >
-            {e}
+            <QuestIcon value={id} size={18} />
           </button>
-        ))}
-      </div>
-
-      <div className="picker-row" role="group" aria-label="Choose a color">
-        {DEFAULT_COLORS.map((c) => (
-          <button
-            key={c}
-            type="button"
-            className={"color-swatch" + (c === form.color ? " color-swatch-selected" : "")}
-            style={{ background: c }}
-            aria-pressed={c === form.color}
-            aria-label={`Use color ${c}`}
-            onClick={() => update({ color: c })}
-          />
         ))}
       </div>
 

@@ -1,3 +1,4 @@
+import { X } from "@phosphor-icons/react";
 import { formatTime } from "../lib/dates.js";
 
 /** Shown only when there's something to actually remind the user about — see the
@@ -10,16 +11,16 @@ export default function ReminderBanner({ pendingCount, deadline, onView, onDismi
     <div className="reminder-banner" role="status">
       <div className="reminder-banner-text">
         <p className="reminder-banner-title">
-          You still have {pendingCount} habit{pendingCount === 1 ? "" : "s"} left today.
+          You still have {pendingCount} quest{pendingCount === 1 ? "" : "s"} left today.
         </p>
         {deadline && <p className="reminder-banner-subtitle">Finish them before {formatTime(deadline)}.</p>}
       </div>
       <div className="reminder-banner-actions">
         <button type="button" className="reminder-banner-view" onClick={onView}>
-          View habits
+          View quests
         </button>
         <button type="button" className="reminder-banner-dismiss" aria-label="Dismiss reminder" onClick={onDismiss}>
-          ×
+          <X size={16} aria-hidden="true" />
         </button>
       </div>
     </div>
